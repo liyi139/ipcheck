@@ -4,7 +4,7 @@ import java.io.FileReader;
 
 import org.junit.Test;
 
-import com.langnatech.device.CheckConfBean;
+import com.langnatech.ipcheck.bean.CheckConfBean;
 import com.langnatech.util.XmlConvertUtil;
 
 public class TestXML {
