@@ -2,6 +2,7 @@ package com.langnatech.ipcheck.snmp;
 
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
 import org.snmp4j.CommunityTarget;
 import org.snmp4j.PDU;
 import org.snmp4j.Snmp;
@@ -18,7 +19,7 @@ import org.snmp4j.smi.VariableBinding;
 import org.snmp4j.transport.DefaultUdpTransportMapping;
 
 public class SnmpWalk {
-
+	private static final Logger logger = Logger.getLogger(SnmpWalk.class);
 	public static final int DEFAULT_VERSION = SnmpConstants.version2c;
 	public static final String DEFAULT_PROTOCOL = "udp";
 	public static final int DEFAULT_PORT = 161;
@@ -36,8 +37,7 @@ public class SnmpWalk {
 	 * @return CommunityTarget
 	 */
 	public static CommunityTarget createDefault(String ip, String community) {
-		Address address = GenericAddress.parse(DEFAULT_PROTOCOL + ":" + ip
-				+ "/" + DEFAULT_PORT);
+		Address address = GenericAddress.parse(DEFAULT_PROTOCOL + ":" + ip + "/" + DEFAULT_PORT);
 		CommunityTarget target = new CommunityTarget();
 		target.setCommunity(new OctetString(community));
 		target.setAddress(address);
@@ -53,7 +53,7 @@ public class SnmpWalk {
 	 * @param oid
 	 */
 	@SuppressWarnings("unchecked")
-	public static void snmpWalk(String ip, String community, String targetOid) {
+	public static void snmpWalk(String ip, String community, String targetOid, SnmpWalkCallback callBack) {
 
 		CommunityTarget target = SnmpWalk.createDefault(ip, community);
 		@SuppressWarnings("rawtypes")
@@ -69,7 +69,6 @@ public class SnmpWalk {
 			pdu.add(new VariableBinding(targetOID));
 
 			boolean finished = false;
-			System.out.println("----&gt; demo start &lt;----");
 			while (!finished) {
 				VariableBinding vb = null;
 				ResponseEvent respEvent = snmp.getNext(pdu, target);
@@ -82,18 +81,17 @@ public class SnmpWalk {
 				}
 				finished = checkWalkFinished(targetOID, pdu, vb);
 				if (!finished) {
-					System.out.println(vb.getOid() + " = " + vb.getVariable());
+					callBack.handleIP(vb.getOid().toString(), vb.getVariable().toString());
 					pdu.setRequestID(new Integer32(0));
 					pdu.set(0, vb);
 				} else {
-					System.out.println("SNMP walk OID has finished.");
+					logger.info("SNMP walk OID has finished.");
 					snmp.close();
 				}
 			}
-			System.out.println("----&gt; demo end &lt;----");
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println("SNMP walk Exception: " + e);
+			logger.error("SNMP walk Exception: " + e.getMessage());
 		} finally {
 			if (snmp != null) {
 				try {
@@ -107,61 +105,36 @@ public class SnmpWalk {
 	}
 
 	/**
-	 * 1)responsePDU == null&lt;br&gt;
-	 * 2)responsePDU.getErrorStatus() != 0&lt;br&gt;
-	 * 3)responsePDU.get(0).getOid() == null&lt;br&gt;
-	 * 4)responsePDU.get(0).getOid().size() &lt; targetOID.size()&lt;br&gt;
-	 * 5)targetOID.leftMostCompare(targetOID.size(),responsePDU.get(0).getOid())
-	 * !=0&lt;br&gt;
-	 * 6)Null.isExceptionSyntax(responsePDU.get(0).getVariable().getSyntax())&lt;br&gt;
-	 * 7)responsePDU.get(0).getOid().compareTo(targetOID) &lt;= 0&lt;br&gt;
-	 *
 	 * @param resquestPDU
 	 * @param targetOID
 	 * @param responsePDU
 	 * @param vb
 	 * @return
 	 */
-	private static boolean checkWalkFinished(OID targetOID, PDU pdu,
-			VariableBinding vb) {
+	private static boolean checkWalkFinished(OID targetOID, PDU pdu, VariableBinding vb) {
 		boolean finished = false;
 		if (pdu.getErrorStatus() != 0) {
-			System.out.println("[true] responsePDU.getErrorStatus() != 0 ");
-			System.out.println(pdu.getErrorStatusText());
+			logger.info("[true] responsePDU.getErrorStatus() != 0 ");
+			logger.info(pdu.getErrorStatusText());
 			finished = true;
 		} else if (vb.getOid() == null) {
-			System.out.println("[true] vb.getOid() == null");
+			logger.info("[true] vb.getOid() == null");
 			finished = true;
-		} else if (vb.getOid().size() <targetOID.size()) {
-			System.out.println("[true] vb.getOid().size() &lt; targetOID.size()");
+		} else if (vb.getOid().size() < targetOID.size()) {
+			logger.info("[true] vb.getOid().size() &lt; targetOID.size()");
 			finished = true;
 		} else if (targetOID.leftMostCompare(targetOID.size(), vb.getOid()) != 0) {
-			System.out.println("[true] targetOID.leftMostCompare() != 0");
+			logger.info("[true] targetOID.leftMostCompare() != 0");
 			finished = true;
 		} else if (Null.isExceptionSyntax(vb.getVariable().getSyntax())) {
-			System.out
-					.println("[true] Null.isExceptionSyntax(vb.getVariable().getSyntax())");
+			logger.info("[true] Null.isExceptionSyntax(vb.getVariable().getSyntax())");
 			finished = true;
 		} else if (vb.getOid().compareTo(targetOID) <= 0) {
-			System.out.println("[true] Variable received is not "
-					+ "lexicographic successor of requested " + "one:");
-			System.out.println(vb.toString() + " &lt;= " + targetOID);
+			logger.info("[true] Variable received is not " + "lexicographic successor of requested " + "one:");
+			logger.info(vb.toString() + " &lt;= " + targetOID);
 			finished = true;
 		}
 		return finished;
-
-	}
-
-	/**
-	 *
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		String ip = "192.168.8.254";
-		String community = "public";
-		// 1.3.6.1.2.1.2.2.1.2
-		String targetOid = ".1.3.6.1.2.1.1";
-		SnmpWalk.snmpWalk(ip, community, targetOid);
 
 	}
 

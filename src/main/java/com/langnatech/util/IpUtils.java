@@ -6,7 +6,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.Assert;
 
 public class IpUtils {
 
@@ -69,7 +68,6 @@ public class IpUtils {
    * @return
    */
   public static long getDecByIp(String ip) {
-    Assert.isTrue(IpUtils.isIp(ip), "Parameter ip: IP address is not Vaild ");
     long[] ary = new long[4];
     int position1 = ip.indexOf(".");
     int position2 = ip.indexOf(".", position1 + 1);

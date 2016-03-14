@@ -78,7 +78,7 @@ public class IpPoolService {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<SubNetBean> getAllLeafSubnet() throws Exception {
+	private List<SubNetBean> getAllLeafSubnet() throws Exception {
 		QueryRunner queryRunner = new QueryRunner(DataSourceHolder.getDatasource());
 		String sql = "SELECT A.SUBNET_ID subnetId,A.CITY_ID cityId,A.BEGIN_IP beginIp,A.END_IP endIp,"
 				+ "A.NETMASK netmask,A.PLAN_STATUS planStatus,A.USE_STATUS useStatus,A.POOL_ID poolId "
@@ -94,7 +94,7 @@ public class IpPoolService {
 	 * 
 	 * @throws Exception
 	 */
-	public void createTempTableForFullIP() throws Exception {
+	private void createTempTableForFullIP() throws Exception {
 		QueryRunner run = new QueryRunner(DataSourceHolder.getDatasource());
 		String sql = "DROP TABLE IF EXISTS IP_TMP_FULL_ADDRESS";
 		run.update(sql);

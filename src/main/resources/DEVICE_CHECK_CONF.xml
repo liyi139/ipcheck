@@ -7,9 +7,9 @@
 		model="NE80E" city="997" cityname="阿克苏" ip="221.181.57.121" port="161"
 		community="shuguan172" oid="1.3.6.1.2.1.4.24.7.1"></DEVICE_CONF>
 	<DEVICE_CONF isCheck="true" brand="HUAWEI" deviceType="router"
-		model="ME60X16" city="995" cityname="阿克苏" ip="221.181.57.121"
+		model="ME60X16" city="995" cityname="吐鲁番" ip="221.181.57.121"
 		port="161" community="shuguan172" oid="1.3.6.1.2.1.4.24.7.1"></DEVICE_CONF>
 	<DEVICE_CONF isCheck="true" brand="HUAWEI" deviceType="router"
-		model="NE80E" city="995" cityname="阿克苏" ip="221.181.57.121" port="161"
+		model="NE80E" city="995" cityname="吐鲁番" ip="221.181.57.121" port="161"
 		community="shuguan172" oid="1.3.6.1.2.1.4.24.7.1"></DEVICE_CONF>
 </DEVICE_LIST>

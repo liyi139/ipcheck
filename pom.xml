@@ -41,11 +41,6 @@
 			<version>3.2.1</version>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-jdbc</artifactId>
-			<version>3.2.4.RELEASE</version>
-		</dependency>
-		<dependency>
 			<groupId>commons-dbutils</groupId>
 			<artifactId>commons-dbutils</artifactId>
 			<version>1.6</version>
@@ -88,7 +83,7 @@
 							<!-- 生成的manifest中classpath的前缀，因为要把第三方jar放到lib目录下，所以classpath的前缀是lib/ -->
 							<classpathPrefix>lib/</classpathPrefix>
 							<!-- 应用的main class -->
-							<mainClass>com.langnatech.ipcheck.collect.IPCheck</mainClass>
+							<mainClass>com.langnatech.ipcheck.IPCheck</mainClass>
 						</manifest>
 					</archive>
 					<!-- 过滤掉不希望包含在jar中的文件 -->

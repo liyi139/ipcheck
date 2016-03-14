@@ -6,7 +6,6 @@ import javax.sql.DataSource;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.log4j.Logger;
 
@@ -23,7 +22,7 @@ public class DataSourceHolder {
 
 	private static void initDataSource() throws ConfigurationException{
 		ds = new BasicDataSource();
-		Configuration config = new PropertiesConfiguration("ipcheck.properties");
+		Configuration config = PropertiesHolder.getConfig();
 		ds.setDriverClassName(config.getString("jdbc.ipms.driver"));
 		ds.setUrl(config.getString("jdbc.ipms.url"));
 		ds.setUsername(config.getString("jdbc.ipms.username"));
