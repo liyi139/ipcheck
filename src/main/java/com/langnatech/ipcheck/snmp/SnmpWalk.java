@@ -75,19 +75,14 @@ public class SnmpWalk {
 				ResponseEvent respEvent = snmp.getNext(pdu, target);
 				PDU response = respEvent.getResponse();
 				if (null == response) {
-					System.out.println("responsePDU == null");
 					finished = true;
 					break;
 				} else {
 					vb = response.get(0);
 				}
-				// check finish
 				finished = checkWalkFinished(targetOID, pdu, vb);
 				if (!finished) {
-					System.out.println("==== walk each vlaue :");
 					System.out.println(vb.getOid() + " = " + vb.getVariable());
-
-					// Set up the variable binding for the next entry.
 					pdu.setRequestID(new Integer32(0));
 					pdu.set(0, vb);
 				} else {
