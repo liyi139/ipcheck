@@ -1,3 +1,0 @@
-2016-03-12 12:56:30.229[com.langnatech.ipcheck.pool.IpPoolService:INFO 37] init datasource,  NumActive:10,NumIdle:5
-2016-03-12 13:21:19.018[com.langnatech.ipcheck.pool.IpPoolService:INFO 39] init datasource,  NumActive:10,NumIdle:5
-2016-03-12 13:22:01.333[com.langnatech.ipcheck.pool.IpPoolService:INFO 39] init datasource,  NumActive:10,NumIdle:5
