@@ -1,10 +1,9 @@
 package com.langnatech.ipcheck;
 
-import java.io.File;
-
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.log4j.Logger;
 
+import com.langnatech.ipcheck.collect.CollectFileToDB;
 import com.langnatech.ipcheck.collect.IPCollecter;
 import com.langnatech.ipcheck.holder.DataSourceHolder;
 import com.langnatech.ipcheck.pool.IpPoolService;
@@ -13,22 +12,33 @@ public class IPCheck {
 	private static Logger logger = Logger.getLogger(IPCheck.class);
 
 	public static void main(String[] args) {
-		File saveFile =new File("/home/liyi/Downloads","walk_log_new.log");
-		saveFile.renameTo(new File(saveFile.getParent(), saveFile.getName().replaceAll("\\.log", "")));
-	}
-	public static void main2(String[] args) {
+		String step = args.length > 0 ? args[0] : null;
 		try {
-			// 根据IP地址池,生成全量IP地址临时表
-			logger.info("::::1.初始化生成地址池全量IP地址临时表::::");
-			IpPoolService ipPoolService = new IpPoolService();
-			ipPoolService.initFullAddressTable();
-			// 通过snmp协议从设备上采集地址,并插入临时表
-			logger.info("::::2.开始设备采集::::");
-			IPCollecter.collect();
-			// 通过临时表关联,对ip地址进行核查,并讲核查结果插入核查结果表
-			logger.info("::::3.开始IP地址核查比对::::");
-			int warnCount = IPCheck.checkIP();
-			logger.info("::::IP地址核查异常地址数量:" + warnCount);
+			if (step == null || step.equalsIgnoreCase("initIPTemp")) {
+				// 根据IP地址池,生成全量IP地址临时表
+				logger.info("::::1.BEGIN初始化生成地址池全量IP地址临时表::::");
+				IpPoolService ipPoolService = new IpPoolService();
+				ipPoolService.initFullAddressTable();
+				logger.info("::::1.END::::::::::::::::::::::::::::::::::");
+			}
+			if (step == null || step.equalsIgnoreCase("collectToFile")) {
+				// 通过snmp协议从设备上采集地址,并插入临时表
+				logger.info("::::2.BEGIN 设备采集,采集结果保存文件:::::::::");
+				IPCollecter.collect();
+				logger.info("::::2.END::::::::::::::::::::::::::::::::::");
+			}
+			if (step == null || step.equalsIgnoreCase("collectToDB")) {
+				// 通过snmp协议从设备上采集地址,并插入临时表
+				logger.info("::::3.BEGIN 将采集结果文件读取入库,插入临时表::::");
+				CollectFileToDB.readFileToDB();
+				logger.info("::::3.END::::::::::::::::::::::::::::::::::");
+			}
+			if (step == null || step.equalsIgnoreCase("check")) {
+				// 通过临时表关联,对ip地址进行核查,并讲核查结果插入核查结果表
+				logger.info("::::4.BEGIN IP地址核查比对,插入核查结果表::::");
+				int warnCount = IPCheck.checkIP();
+				logger.info("::::4.END IP地址核查异常地址数量:" + warnCount+"::::");
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

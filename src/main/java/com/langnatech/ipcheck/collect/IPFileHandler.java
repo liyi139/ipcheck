@@ -4,25 +4,18 @@ import java.io.File;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.dbutils.QueryRunner;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.hash.BloomFilter;
-import com.google.common.hash.Funnels;
 import com.langnatech.ipcheck.holder.DataSourceHolder;
 
 public class IPFileHandler {
 	private final static int BATCH_SIZE = 1000;
 	private static IPFileHandler ipFileHandler = null;
 	private List<Object[]> ipList = null;
-	BloomFilter<CharSequence> bloomFilter = BloomFilter.create(Funnels.stringFunnel(Charset.defaultCharset()), 10000000,
-			0.001F);
-
 	private IPFileHandler() {
 
 	}
@@ -49,12 +42,12 @@ public class IPFileHandler {
 		}
 		ipList.add(params);
 		if (ipList.size() != 0 && ipList.size() % BATCH_SIZE == 0) {
-			this.insertFlush();
+			this.flush();
 			this.ipList.clear();
 		}
 	}
 
-	private void insertFlush() throws Exception {
+	public void flush() throws Exception {
 		QueryRunner run = new QueryRunner(DataSourceHolder.getDatasource());
 		String sql = "INSERT INTO IP_TMP_CHECK (CHECK_IP,CHECK_DEV,CHECK_CITY)VALUES(?,?,?)";
 		Object[][] ary = new Object[ipList.size()][6];
@@ -65,13 +58,14 @@ public class IPFileHandler {
 		ipList.clear();
 	}
 
-	public void readFileToDB(File file, String ip, String city) throws Exception {
+	public void readFileToDB(File file, String ip, String city, BloomFilter<CharSequence> bloomFilter)
+			throws Exception {
 		int bufSize = 100;
 		@SuppressWarnings("resource")
 		FileChannel fileChannel = new RandomAccessFile(file, "r").getChannel();
 		ByteBuffer rBuffer = ByteBuffer.allocate(bufSize);
 		try {
-			readFileByLine(bufSize, fileChannel, rBuffer, ip, city);
+			readFileByLine(bufSize, fileChannel, rBuffer, ip, city, bloomFilter);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -80,7 +74,7 @@ public class IPFileHandler {
 	}
 
 	private void readFileByLine(int bufSize, FileChannel fileChannel, ByteBuffer rBuffer, String checkIp,
-			String checkCity) throws Exception {
+			String checkCity, BloomFilter<CharSequence> bloomFilter) throws Exception {
 		String enterStr = "\n";
 		byte[] bs = new byte[bufSize];
 		StringBuffer strBuf = new StringBuffer("");
@@ -110,6 +104,5 @@ public class IPFileHandler {
 				strBuf.append(tempString.substring(fromIndex, rSize));
 			}
 		}
-
 	}
 }

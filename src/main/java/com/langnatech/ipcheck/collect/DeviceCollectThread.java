@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -15,9 +16,8 @@ import com.langnatech.ipcheck.bean.DeviceConfBean;
 import com.langnatech.ipcheck.holder.PropertiesHolder;
 import com.langnatech.ipcheck.snmp.SnmpWalk;
 import com.langnatech.ipcheck.snmp.SnmpWalkCallback;
-import com.langnatech.util.IpUtils;
 
-public class DeviceCollectThread implements Runnable {
+public class DeviceCollectThread implements Callable<Boolean> {
 	private DeviceConfBean deviceConf;
 	private static final Logger logger = Logger.getLogger(DeviceCollectThread.class);
 
@@ -25,13 +25,13 @@ public class DeviceCollectThread implements Runnable {
 		this.deviceConf = deviceConf;
 	}
 
-	public void run() {
-		logger.info(deviceConf.getIp() + "Collect ip start! City is: " + deviceConf.getCityname() + ", DeviceModel:"
+	public Boolean call() {
+		logger.info(deviceConf.getIp() + " Collect ip start! City is: " + deviceConf.getCityname() + ", DeviceModel:"
 				+ deviceConf.getModel());
 		final BloomFilter<CharSequence> bloomFilter = BloomFilter.create(Funnels.stringFunnel(Charset.defaultCharset()),
 				2000000, 0.01F);
 		String saveDir = PropertiesHolder.getConfig().getString("collect.saveDir");
-		String fileName = IpUtils.getDecByIp(deviceConf.getIp()) + "@" + deviceConf.getCity() + ".tmp";
+		String fileName = deviceConf.getIp().replaceAll("\\.", "-") + "@" + deviceConf.getCity() + ".tmp";
 		File saveFile = new File(saveDir, fileName);
 		logger.info(deviceConf.getIp() + " Save file to " + saveFile.getPath());
 		FileWriter fileWriter = null;
@@ -54,11 +54,13 @@ public class DeviceCollectThread implements Runnable {
 			fileWriter.flush();
 			fileWriter.close();
 			saveFile.renameTo(new File(saveFile.getParent(), saveFile.getName().replaceAll("\\.tmp", ".ip")));
+			return true;
 		} catch (IOException e) {
 			logger.error(deviceConf.getIp() + " Collect error! " + e.getMessage());
 			e.printStackTrace();
+			return false;
 		} finally {
-			logger.info(deviceConf.getIp() + "Collect ip end!  City is: " + deviceConf.getCityname() + ", DeviceModel:"
+			logger.info(deviceConf.getIp() + " Collect ip end!  City is: " + deviceConf.getCityname() + ", DeviceModel:"
 					+ deviceConf.getModel());
 			try {
 				fileWriter.close();
