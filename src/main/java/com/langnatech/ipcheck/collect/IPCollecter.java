@@ -22,12 +22,9 @@ public class IPCollecter {
 
 	private static List<DeviceConfBean> getAllCollectDevConf() {
 		try {
-			String file = IPCollecter.class.getClassLoader().getResource("DEVICE_CHECK_CONF.xml").getFile();
-			FileReader fileReader = new FileReader(file);
-			CheckConfBean checkConfBean = XmlConvertUtil.fromXml(fileReader, CheckConfBean.class);
+			CheckConfBean checkConfBean = XmlConvertUtil
+					.fromXml(ClassLoader.getSystemResourceAsStream("DEVICE_CHECK_CONF.xml"), CheckConfBean.class);
 			return checkConfBean.getDeviceConfList();
-		} catch (FileNotFoundException e) {
-			logger.error("Device configuration file [DEVICE_CHECK_CONF.xml] not found!");
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.error("Parse configuration file [DEVICE_CHECK_CONF.xml] exception!" + e.getMessage());
