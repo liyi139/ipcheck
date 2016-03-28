@@ -46,7 +46,7 @@ public class DeviceCollectThread implements Callable<Boolean> {
 							String ip = StringUtils.join(ary, ".");
 							if (!bloomFilter.mightContain(ip)) {
 								bloomFilter.put(ip);
-								fileWriter2.write(oid);
+								fileWriter2.write(ip);
 								fileWriter2.write("\n");
 							}
 						}
@@ -69,5 +69,4 @@ public class DeviceCollectThread implements Callable<Boolean> {
 			}
 		}
 	}
-
 }
